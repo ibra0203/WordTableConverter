@@ -40,5 +40,9 @@ namespace WordTableConverter
             return mainForm;
         }
 
+        public static void Close()
+        {
+        }
+
     }
 }

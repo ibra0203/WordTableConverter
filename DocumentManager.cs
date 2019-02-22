@@ -92,24 +92,29 @@ namespace WordTableConverter
             object start = 0;
             object end = tableRange.Start;
             Range rn = TargetDocument.Range(ref start, ref end);
-            rn.Copy();
-            rn.SetRange(TargetDocument.Content.End+1, TargetDocument.Content.End+1);
-            rn.Select();
-            
-            rn.Paste();
+            if (rn.Text != null)
+            {
 
-            rn = tableRange;
-            rn.Copy();
-            rn.SetRange(TargetDocument.Content.End + 1, TargetDocument.Content.End + 1);
-            Table newTable = TargetDocument.Tables.Add(rn, 1, 1, ref missing, ref missing);
-            newTable.Range.Paste();
-            Clipboard.Clear();
+                rn.Copy();
+                rn.SetRange(TargetDocument.Content.End + 1, TargetDocument.Content.End + 1);
+                rn.Select();
+
+                rn.Paste();
+                rn = tableRange;
+                rn.Copy();
+                rn.SetRange(TargetDocument.Content.End + 1, TargetDocument.Content.End + 1);
+                Table newTable = TargetDocument.Tables.Add(rn, 1, 1, ref missing, ref missing);
+                newTable.Range.Paste();
+                Clipboard.Clear();
+            }
+            
 
         }
         [STAThread]
         static void FillDocument()
         {
             Table Tbl = TargetDocument.Tables[1];
+            Table srcTbl = SourceDocument.Tables[1];
             object start = Tbl.Range.End;
             object end = TargetDocument.Content.End;
             tableHeight = Tbl.Range.End - Tbl.Range.Start;
@@ -128,12 +133,21 @@ namespace WordTableConverter
                     WordManager.app.Selection.Delete();
                 }
             }
-            int rowsPerTable = Tbl.Rows.Count - 1;
-            for(int rows=0; rows<sourceData.Count; rows+=rowsPerTable)
+            int rowsPerTable = Tbl.Rows.Count-1;
+            int srcDataRows = sourceData.Count;
+            for (int rows=0; rows<srcDataRows; rows+=rowsPerTable)
             {
                 AddEmptyTable(Tbl.Range);
                 
             }
+            if (Tbl.Rows.Count-1 >= srcDataRows+2)
+            {
+                Range dltRange = TargetDocument.Range(Tbl.Rows[srcDataRows+2].Range.Start, TargetDocument.Content.End);
+                dltRange.Select();
+                WordManager.app.Selection.Delete();
+                Clipboard.Clear();
+            }
+
 
         }
 
@@ -239,19 +253,31 @@ namespace WordTableConverter
             FillDocument();
         }
         public static void SaveFile(ref object fileName)
-        {            
-           
-            FillTables();
-            FixTablesAlignment();
-            object missing = System.Reflection.Missing.Value;
-            
-            TargetDocument.SaveAs2(ref fileName,
-                ref missing, ref missing, ref missing, ref missing, ref missing,
-                ref missing, ref missing, ref missing, ref missing, ref missing,
-                ref missing, ref missing, ref missing, ref missing, ref missing);
+        {
 
-            TargetDocument.Close();
-            DataDone = 0;
+            try
+            {
+                FillTables();
+               // FixTablesAlignment();
+                object missing = System.Reflection.Missing.Value;
+
+                TargetDocument.SaveAs2(ref fileName,
+                    ref missing, ref missing, ref missing, ref missing, ref missing,
+                    ref missing, ref missing, ref missing, ref missing, ref missing,
+                    ref missing, ref missing, ref missing, ref missing, ref missing);
+
+                TargetDocument.Close();
+                DataDone = 0;
+            }
+            catch(Exception exp)
+            {
+
+                Console.WriteLine(exp.Message);
+                MessageBox.Show(exp.Message);
+                WordManager.Close();
+                WindowManager.Close();
+               
+            }
         }
 
         static Font getMostCommonTableStyle(ref Document doc)
