@@ -26,5 +26,6 @@ In our case, 3 will be injected into 1, and 1 will be injected to 2.
 
 4-Press Save and choose a destination file.
 
-Here's our result
+Here's our result:
+
 ![Result](/README_CONTENT/6.PNG)
