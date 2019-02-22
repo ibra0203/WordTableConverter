@@ -1,5 +1,5 @@
 # WordTableConverter
-A Visual C# Windows Forms Application that extracts data from selected columns of an imported Word document, then injects the data into selected columns from another empty table in another document.
+A Visual C# Windows Forms Application that extracts data from the selected columns of an imported Word document, then injects the data into the selected columns of an empty table in another document.
 Requires Microsoft Word to work.
 
 *Current version needs additional feature implementation for larger tables*
